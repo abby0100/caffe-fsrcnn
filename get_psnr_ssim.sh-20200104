@@ -1,0 +1,31 @@
+#!/bin/bash
+
+img1=$1
+img2=$2
+psnr_log=psnr.log
+ssim_log=ssim.log
+log=my.log
+
+	rm $psnr_log $ssim_log $log
+
+    ffmpeg -i $img1 -i $img2 -lavfi "[0:v][1:v]ssim=$ssim_log;[0:v][1:v]psnr=$psnr_log" -f null -
+    #ffmpeg -i $img1 -i $img2 -lavfi "[0:v][1:v]ssim=ssim.log;[0:v][1:v]psnr=psnr.log" -f null -
+
+	echo
+    echo -e "---------------------------------------------------------------------" >> $log
+    echo -e "img1: $img1" >> $log
+    echo -e "img2: $img2" >> $log
+
+    echo -e "SSIM:" >> $log
+    cat ssim.log >> $log
+
+    echo -e "PSNR:" >> $log
+    cat psnr.log >> $log
+
+# usage:
+# ./get_psnr_ssim.sh-20200104 input.png output.png
+	# PSNR
+	# cat $log | grep -E psnr_avg | awk '{print $4}' | awk -F":" '{print $2}'
+	# SSIM
+	# cat $log | grep -E All | awk '{print $3}' | awk -F":" '{print $2}'
+
