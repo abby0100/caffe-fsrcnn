@@ -1,0 +1,263 @@
+name: "xyFSRCNN-s-subpixel"
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param {
+    shape {
+      dim: 1
+      dim: 3
+      dim: 360
+      dim: 640
+    }
+  }
+}
+
+layer {
+  name: "label"
+  type: "Input"
+  top: "label"
+  input_param {
+    shape {
+      dim: 1
+      dim: 3
+      dim: 720
+      dim: 1280
+    }
+  }
+}
+
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 32
+    kernel_size: 5
+    stride: 1
+    pad: 1 # 0
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "relu1"
+  type: "PReLU"
+  bottom: "conv1"
+  top: "conv1"
+  prelu_param {
+    channel_shared: 1
+  }
+}
+
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "conv1"
+  top: "conv2"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 5
+    kernel_size: 1
+    stride: 1
+	group: 1
+    pad: 0
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "relu2"
+  type: "PReLU"
+  bottom: "conv2"
+  top: "conv2"
+  prelu_param {
+    channel_shared: 1
+  }
+}
+
+layer {
+  name: "conv22"
+  type: "Convolution"
+  bottom: "conv2"
+  top: "conv22"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 5
+    kernel_size: 3
+    stride: 1
+	group: 1
+    pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "relu22"
+  type: "PReLU"
+  bottom: "conv22"
+  top: "conv22"
+  prelu_param {
+    channel_shared: 1
+  }
+}
+
+layer {
+  name: "conv23"
+  type: "Convolution"
+  bottom: "conv22"
+  top: "conv23"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 32
+    kernel_size: 1
+    stride: 1
+	group: 1
+    pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "relu23"
+  type: "PReLU"
+  bottom: "conv23"
+  top: "conv23"
+  prelu_param {
+    channel_shared: 1
+  }
+}
+
+layer {
+  name: "conv3"
+  type: "Convolution"
+  bottom: "conv23"
+  top: "conv3"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 12
+    kernel_size: 3
+    stride: 1
+    pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+
+layer {
+  name: "reshape_to_6D"
+  type: "Reshape"
+  bottom: "conv3"
+  top: "reshape_to_6D"
+  reshape_param {
+    shape {
+      dim: 0
+      dim: 2
+      dim: 2
+      dim: 3
+      dim: 360
+      dim: -1
+    }
+  }
+}
+
+layer {
+  name: "permute"
+  type: "Permute"
+  bottom: "reshape_to_6D"
+  top: "permute"
+  permute_param { 
+    order: 0 # 0,3,4,1,5,2
+    order: 3
+    order: 4
+    order: 1
+    order: 5
+    order: 2
+  }
+}
+
+layer {
+  name: "reshape_to_4D"
+  type: "Reshape"
+  bottom: "permute"
+  top: "reshape_to_4D"
+  reshape_param {
+    shape {
+      dim: 0
+      dim: 3
+      dim: 720
+      dim: -1
+    }
+  }
+}
+
+layer {
+  name: "loss"
+  type: "EuclideanLoss"
+  #type: "SoftmaxWithLoss"
+  bottom: "reshape_to_4D"
+  bottom: "label"
+  top: "loss"
+}
+

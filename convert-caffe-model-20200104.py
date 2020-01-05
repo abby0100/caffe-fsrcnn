@@ -26,4 +26,6 @@ def main():
 if __name__ == "__main__":
 	sys.exit(main())
 
+# usage:
 # python convert-caffe-model-20200104.py test-io/fsrcnn-s_deploy.prototxt
+# python convert-caffe-model-20200104.py 640-360/subpixel/fsrcnn-s_deploy.prototxt

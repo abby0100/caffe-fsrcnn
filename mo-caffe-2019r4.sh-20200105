@@ -1,0 +1,86 @@
+#!/usr/bin/bash
+
+model_folder=$1
+
+fp_chooice=$2
+function show-cases {
+	echo
+	echo -e "------------------------------------------------"
+	echo -e "1	FP32	CPU"
+	echo -e "2	FP16	HETERO:FPGA,CPU"
+	echo -e "------------------------------------------------"
+	read -p "[+] Choose which case do you want to run [number] " fp_chooice
+}
+
+
+function check_openvino_version {
+
+    folder_openvino_2018r5_fpga="/opt/intel/computer_vision_sdk_fpga_2018.5.445"
+    folder_openvino_2019r1_fpga="/opt/intel/openvino_fpga_2019.1.094"
+    folder_openvino_2019r2_fpga="/opt/intel/openvino_fpga_2019.2.245"
+    folder_openvino_2019r3_fpga="/opt/intel/openvino_fpga_2019.3.331"
+    folder_openvino_2019r4_fpga="/opt/intel/openvino_fpga_2019.4.517"
+
+
+	mo=/opt/intel/openvino/deployment_tools/model_optimizer/mo_caffe.py
+
+	echo
+	prototxt=$(find $model_folder -maxdepth 1 -name "*.prototxt")
+	#caffemodel=$(find -maxdepth 1 $model_folder -name "*.caffemodel")
+	caffemodel=$(find $model_folder -maxdepth 1 -name "*.caffemodel")
+
+    echo -e "[+] prototxt\t" ${prototxt}
+    echo -e "[+] caffemodel\t" ${caffemodel}
+    echo
+	
+	if [[ -z "$fp_chooice" ]] || [[ "$fp_chooice" == "1" ]]; then
+		ftype=FP32
+	elif [[ "$fp_chooice" == "2" ]]; then
+		ftype=FP16
+	fi
+
+    if [[ -d $folder_openvino_2018r5_fpga ]]; then
+        version_openvino="2018r5-FPGA"
+        folder_openvino=$folder_openvino_2018r5_fpga
+		dst_dir=2018r5_$ftype
+
+    elif [[ -d $folder_openvino_2019r1_fpga ]]; then
+        version_openvino="2019r1-FPGA"
+        folder_openvino=$folder_openvino_2019r1_fpga
+		dst_dir=2019r1_$ftype
+
+    elif [[ -d $folder_openvino_2019r2_fpga ]]; then
+        version_openvino="2019r2-FPGA"
+        folder_openvino=$folder_openvino_2019r2_fpga
+		dst_dir=2019r2_$ftype
+
+    elif [[ -d $folder_openvino_2019r3_fpga ]]; then
+        version_openvino="2019r3-FPGA"
+        folder_openvino=$folder_openvino_2019r3_fpga
+		dst_dir=2019r3_$ftype
+
+    elif [[ -d $folder_openvino_2019r4_fpga ]]; then
+        version_openvino="2019r4-FPGA"
+        folder_openvino=$folder_openvino_2019r4_fpga
+		dst_dir=2019r4_$ftype
+
+    fi
+
+    echo -e "[+] OpenVINO version\t$version_openvino"
+    echo -e "[+] OpenVINO path\t$folder_openvino"
+    echo -e "[+] dst_dir\t\t" ${dst_dir}
+
+    echo
+	python3.6 $mo --input_model $caffemodel --input_proto $prototxt --output_dir $dst_dir --data_type $ftype
+}
+
+
+# start from here
+	show-cases
+
+	check_openvino_version
+
+# usage
+# ./run-mo-caffe.sh-20191101 . [read 1]
+# ./run-mo-caffe.sh-20200105 640-360/subpixel/ [read 1]
+# ./mo-caffe-2019r4.sh-20200105 640-360/subpixel/ [read 1]

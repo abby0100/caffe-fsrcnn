@@ -1,8 +1,8 @@
 #import os
 import sys
 
-#caffe_root = '/home/xy18/workspace/git/caffe/caffe-ssd-20191109/python'
-#sys.path.insert(0, caffe_root)
+caffe_root = '/home/xy18/workspace/git/caffe/caffe-ssd-20191109/python'
+sys.path.insert(0, caffe_root)
 #sys.path.append(caffe_root)
 
 import caffe
@@ -17,11 +17,10 @@ import matplotlib.pyplot as plt
 	# http://simtalk.cn/2016/10/28/PyCaffe-in-Practice/
 
 
-image = 'data/face-640x360.jpg'
-#image = 'data/face-1280x720.jpg'
+data_image = 'data/face-640x360.jpg'
+label_image = 'data/face-1280x720.jpg'
 
 start, end = 0, 0
-
 def track_time(enable):
 	if(enable):
 		global start
@@ -41,13 +40,15 @@ def show_dump(data, file):
 
 	plt.imshow(data, cmap='gray')
 	plt.savefig(file)
+	plt.title(file)
 	plt.show()
 
-def inference(file):
 
+def inference(file):
 	# model
 	prototxt = file
 	caffemodel = prototxt.split('.')[0] + '.caffemodel'
+	print('------------------------------------------------------------')
 	print('[-] inference prototxt  :\t{}'.format(prototxt))
 	print('[-] inference caffemodel:\t{}'.format(caffemodel))
 
@@ -56,26 +57,49 @@ def inference(file):
 	caffe.set_mode_cpu()
 
 	# data
-	transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
-	transformer.set_transpose('data', (2, 0, 1)) # 360,640,3 -> 3,360,640
-	transformer.set_raw_scale('data', 255)
-	transformer.set_channel_swap('data', (2, 1, 0)) # RGB -> BGR
+	data_name = 'data'
+	data_transformer = caffe.io.Transformer({data_name: net.blobs[data_name].data.shape})
+	data_transformer.set_transpose(data_name, (2, 0, 1)) # 360,640,3 -> 3,360,640
+	data_transformer.set_raw_scale(data_name, 255)
+	data_transformer.set_channel_swap(data_name, (2, 1, 0)) # RGB -> BGR
 
 	# grey
-	#input_data = caffe.io.load_image(image, color=False)
+	#data_input = caffe.io.load_image(data_image, color=False)
 	# h,w,c
-	input_data = caffe.io.load_image(image, color=True)
-	plt.imshow(input_data)
-	plt.savefig('orig.png')
+	data_input = caffe.io.load_image(data_image, color=True)
+	plt.imshow(data_input)
+	data_png = data_name + '.png'
+	plt.savefig(data_png)
+	plt.title(data_png)
 	plt.show()
 
-	# preprocess: reshape
-	net.blobs['data'].data[0] = transformer.preprocess('data', input_data)
-	#net.blobs['data'].data[...] = transformer.preprocess('data', input_data)
+	net.blobs[data_name].data[0] = data_transformer.preprocess(data_name, data_input)
+	#net.blobs[data_name].data[...] = data_transformer.preprocess(data_name, data_input)
+
+	# label
+	label_name = 'label'
+	label_transformer = caffe.io.Transformer({label_name: net.blobs[label_name].data.shape})
+	label_transformer.set_transpose(label_name, (2, 0, 1))
+	label_transformer.set_raw_scale(label_name, 255)
+	label_transformer.set_channel_swap(label_name, (2, 1, 0))
+
+	label_input = caffe.io.load_image(label_image, color=True)
+	plt.imshow(label_input)
+	label_png = label_name + '.png'
+	plt.savefig(label_png)
+	plt.title(label_png)
+	plt.show()
+
+	net.blobs[label_name].data[0] = label_transformer.preprocess(label_name, label_input)
 
 	# input
-	input = net.blobs['data'].data[0]
+	input = net.blobs[data_name].data[0]
 	show_dump(input, 'input.png')
+
+	# summary
+	print('------------------------------------------------------------')
+	for layer_name, blob in net.blobs.iteritems():
+		print(layer_name+'\t'+str(blob.data.shape))
 
 	# statistics
 	track_time(True)
@@ -83,13 +107,17 @@ def inference(file):
 	track_time(False)
 
 	# output
-	output = net.blobs['conv1'].data[0]
+	#output = net.blobs['conv1'].data[0]
+	output = net.blobs['reshape_to_4D'].data[0]
 	show_dump(output, 'output.png')
 
 	loss = net.blobs['loss'].data
+	print('------------------------------------------------------------')
 	print('loss:\t{}'.format(loss))
+	print('total loss:\t{}'.format(loss * 720 * 1280))
 
 def main():
+	print('------------------------------------------------------------')
 	print('[-] main')
 
 	if len(sys.argv) < 2:
@@ -101,3 +129,6 @@ def main():
 
 if __name__ == "__main__":
 	sys.exit(main())
+
+# usage:
+# python run-caffe-model-20190104.py 640-360/subpixel/fsrcnn-s_deploy.prototxt
