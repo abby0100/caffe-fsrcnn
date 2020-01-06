@@ -1,0 +1,15 @@
+net: "/root/e3s10/caffe-ssd/examples/xy_fsrcnn_s/640-360/subpixel/fsrcnn-s_train_test.prototxt"
+test_iter: 10
+test_interval: 100
+base_lr: 0.01
+momentum: 0.9
+solver_type: SGD
+weight_decay: 0.0005
+lr_policy: "inv"
+gamma: 0.0001
+power: 0.75
+display: 50
+max_iter: 20000
+snapshot: 100
+snapshot_prefix: "fsrcnn-s"
+solver_mode: CPU

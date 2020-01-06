@@ -1,0 +1,10 @@
+720p/orig/apples-1280x720.jpg 0
+720p/orig/butterfly-1280x720.jpg 0
+720p/orig/dog-1280x720.jpg 0
+720p/orig/face-1280x720.jpg 0
+720p/orig/mountain-1280x720.jpg 0
+720p/orig/river-1280x720.jpg 0
+720p/orig/road_tree-1280x720.jpg 0
+720p/orig/snow-1280x720.jpg 0
+720p/orig/sunflower-1280x720.jpg 0
+720p/orig/winter-1280x720.jpg 0

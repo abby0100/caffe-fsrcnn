@@ -114,7 +114,29 @@ def inference(file):
 	loss = net.blobs['loss'].data
 	print('------------------------------------------------------------')
 	print('loss:\t{}'.format(loss))
-	print('total loss:\t{}'.format(loss * 720 * 1280))
+	print('ave loss:\t{}'.format(loss / 720 / 1280))
+
+
+def train(solver_file):
+	#solver_path = '/root/tools/yuan/models-20191115/fsrcnn-bak1120/caffe-fsrcnn/solver.prototxt'
+	#caffe.set_mode_cpu()
+	#caffe.set_device(0)
+	#solver = caffe.SGDSolver(solver_path)
+	caffe.set_mode_cpu()
+	solver = caffe.SGDSolver(solver_file)
+	solver.solve()
+
+def show_usage(prototxt):
+	print('------------------------------------------------------------')
+	print('[*] 1	Train')
+	print('[*] 2	Test')
+	print('------------------------------------------------------------')
+	chooice = int(input('Please chooice a test case [number] '))
+	if chooice == 1:
+		train(prototxt)
+	elif chooice == 2:
+		inference(prototxt)
+
 
 def main():
 	print('------------------------------------------------------------')
@@ -124,7 +146,8 @@ def main():
 		print('Please specify a model')
 		return -1
 
-	inference(sys.argv[1])
+	#inference(sys.argv[1])
+	show_usage(sys.argv[1])
 	return 0
 
 if __name__ == "__main__":
@@ -132,3 +155,4 @@ if __name__ == "__main__":
 
 # usage:
 # python run-caffe-model-20190104.py 640-360/subpixel/fsrcnn-s_deploy.prototxt
+# python run-caffe-model-20190104.py 640-360/subpixel/fsrcnn-s_deploy.prototxt [read 2]
